@@ -6,6 +6,7 @@
 #include <thread>
 #include <chrono>
 #include <mutex>
+#include <bit>
 
 #include <err.h>
 #include <fcntl.h>
@@ -88,6 +89,50 @@ namespace {
         "Gabès", "Fairbanks", "Mexico City", "San Diego", "Niamey", "Odienné", 
         "Rostov-on-Don", "Amsterdam", "Makurdi", "Tokyo", "Phoenix", "Jos", "Honiara"
     };
+
+    #if defined(__AVX2__)
+    #include <immintrin.h>
+    inline const char* find_semi(const char* p) noexcept {
+        const __m256i chunk = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(p));
+        const __m256i eq = _mm256_cmpeq_epi8(chunk, _mm256_set1_epi8(';'));
+        const uint32_t mask = static_cast<uint32_t>(_mm256_movemask_epi8(eq));
+        return p + std::countr_zero(mask);
+    }
+    #else
+    inline const char* find_semi(const char* p) noexcept {
+        const char* semi = nullptr;
+
+        if (p[0] == ';')  return p + 0;
+        else if (p[1] == ';') return p + 1;
+        else if (p[2] == ';') return p + 2;
+        else if (p[3] == ';') return p + 3;
+        else if (p[4] == ';') return p + 4;
+        else if (p[5] == ';') return p + 5;
+        else if (p[6] == ';') return p + 6;
+        else if (p[7] == ';') return p + 7;
+        else if (p[8] == ';') return p + 8;
+        else if (p[9] == ';') return p + 9;
+        else if (p[10] == ';') return p + 10;
+        else if (p[11] == ';') return p + 11;
+        else if (p[12] == ';') return p + 12;
+        else if (p[13] == ';') return p + 13;
+        else if (p[14] == ';') return p + 14;
+        else if (p[15] == ';') return p + 15;
+        else if (p[16] == ';') return p + 16;
+        else if (p[17] == ';') return p + 17;
+        else if (p[18] == ';') return p + 18;
+        else if (p[19] == ';') return p + 19;
+        else if (p[20] == ';') return p + 20;
+        else if (p[21] == ';') return p + 21;
+        else if (p[22] == ';') return p + 22;
+        else if (p[23] == ';') return p + 23;
+        else if (p[24] == ';') return p + 24;
+        else if (p[25] == ';') return p + 25;
+        else if (p[26] == ';') return p + 26;
+        else if (p[27] == ';') return p + 27;
+        else if (p[28] == ';') return p + 28;
+    }
+    #endif
 }
 
 class MemoryMappedFile {
@@ -240,36 +285,7 @@ public:
         // read lines until last line of chunk
         while (current - start < static_cast<long int>(chunk_size_)) {
             const char* line_start = current;
-            const char* semi = nullptr;
-            if (current[0] == ';')  semi = current + 0;
-            else if (current[1] == ';') semi = current + 1;
-            else if (current[2] == ';') semi = current + 2;
-            else if (current[3] == ';') semi = current + 3;
-            else if (current[4] == ';') semi = current + 4;
-            else if (current[5] == ';') semi = current + 5;
-            else if (current[6] == ';') semi = current + 6;
-            else if (current[7] == ';') semi = current + 7;
-            else if (current[8] == ';') semi = current + 8;
-            else if (current[9] == ';') semi = current + 9;
-            else if (current[10] == ';') semi = current + 10;
-            else if (current[11] == ';') semi = current + 11;
-            else if (current[12] == ';') semi = current + 12;
-            else if (current[13] == ';') semi = current + 13;
-            else if (current[14] == ';') semi = current + 14;
-            else if (current[15] == ';') semi = current + 15;
-            else if (current[16] == ';') semi = current + 16;
-            else if (current[17] == ';') semi = current + 17;
-            else if (current[18] == ';') semi = current + 18;
-            else if (current[19] == ';') semi = current + 19;
-            else if (current[20] == ';') semi = current + 20;
-            else if (current[21] == ';') semi = current + 21;
-            else if (current[22] == ';') semi = current + 22;
-            else if (current[23] == ';') semi = current + 23;
-            else if (current[24] == ';') semi = current + 24;
-            else if (current[25] == ';') semi = current + 25;
-            else if (current[26] == ';') semi = current + 26;
-            else if (current[27] == ';') semi = current + 27;
-            else if (current[28] == ';') semi = current + 28;
+            const char* semi = find_semi(current);
 
             current = semi + 1;
             int16_t sign = 1;
